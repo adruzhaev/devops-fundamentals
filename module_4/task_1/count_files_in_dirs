@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+directory=$1
+
+if [[ $directory && -d $directory ]] 
+then
+    total_files=$(find $1 -type f | wc -l)
+
+    if [[ total_files -lt 2 ]]; then FILE=file;
+    else FILE=files; fi
+
+    echo "The given directory and its subdirectories contain ${total_files} ${FILE}."
+else
+    echo "Given argument is not a directory."
+fi
