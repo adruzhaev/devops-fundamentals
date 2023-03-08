@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+freespace=$(df -h / | awk 'NR==2 {print $4}' | rev | cut -c2- | rev)
+RED='\033[0;31m'
+BOLD="\033[1m"
+NORMAL="\033[0m"
+
+if [[ $1 ]]
+then
+    THRESHOLD=$1
+else
+    THRESHOLD=20
+fi
+
+if [ $((0 + freespace)) -lt $THRESHOLD ]
+then 
+    printf "${RED} Free disk space is lower than a threshold. Threshold equals ${BOLD}${THRESHOLD}GB${NORMAL}. Free disk space equals ${BOLD}${freespace}GB${NORMAL}. \n"
+else 
+    printf "You still have free disk space that equals ${BOLD}${freespace}GB${NORMAL} \n"
+fi
