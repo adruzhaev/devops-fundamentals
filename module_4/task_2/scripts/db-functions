@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+CURRENT_DIRECTORY=`dirname "$(readlink -f "$BASH_SOURCE")"`
+BOLD="\033[1m"
+NORMAL="\033[0m"
+BACKUP_NAME="users.db.backup"
+
+validateInput() {
+    local input=$1
+    if [[ $input =~ ^[a-zA-Z]+$ ]]; then 
+        return 1
+    else 
+        return 0
+    fi
+}
+
+addUserToDB() {
+    read -p "Type a user name: " name
+    validateInput $name
+
+    while [ $? == '0' ]
+        do 
+            echo "Use latin letters only." 
+            read -p "Type a user name: " name
+            validateInput $name
+    done
+
+    read -p "Type a user role: " role
+    validateInput $role
+
+    while [ $? == '0' ]
+        do 
+            echo "Use latin letters only." 
+            read -p "Type a user role: " role
+            validateInput $role
+    done
+
+    local user="$name, $role"
+    echo $user >> "$CURRENT_DIRECTORY/../data/users.db"
+    echo "$user was added to the database successfully."
+}
+
+createBackup() {
+    local fileName=`date +%d-%m-%Y`-$BACKUP_NAME
+
+    cp "$CURRENT_DIRECTORY/../data/users.db" "$CURRENT_DIRECTORY/../data/$fileName"
+    echo "The users.db backup was created successfully."
+}
+
+restoreDBFromBackUp() {
+    local backupFiles=$(find "$CURRENT_DIRECTORY/../data/" -type f -name "*.backup" 2> /dev/null)
+    
+    if [ -z "$backupFiles" ]; then
+        echo "No backup file found."
+        exit 0
+    fi
+    
+    local sortedBackups=$(echo "$backupFiles" | sed -e 's|^.*/\(.*\)$|\1\t\0|' | sort -r -n -t\- -k 3.1 -k 1.1 -k 2.1 | cut -f 2-)
+    local latestBackup=$(echo "$sortedBackups" | head -1)
+
+    cat $latestBackup > "$CURRENT_DIRECTORY/../data/users.db"
+    echo "Database was restored from $latestBackup"
+}
+
+findByUserName() {
+    read -p "Type user name you search for: " name
+
+    local searchResults=$(grep -w $name "$CURRENT_DIRECTORY/../data/users.db")
+
+    if [ -z "$searchResults" ];
+    then    
+        echo "User not found"
+    else echo $searchResults
+    fi
+}
+
+listAllData() {
+    local isInversedOrder=$1
+
+    if [ "$isInversedOrder" = "--inverse" ];
+    then 
+        cat -n "$CURRENT_DIRECTORY/../data/users.db" | tac
+    else    
+        cat -n "$CURRENT_DIRECTORY/../data/users.db"
+    fi
+}
+
+getInfo() {
+    echo -e "*** This util helps to work with database. *** \nNext options are available:"
+    echo -e "\t ${BOLD}add${NORMAL} => add user name and role to the database."
+    echo -e "\t ${BOLD}help${NORMAL} => commands list."
+    echo -e "\t ${BOLD}backup${NORMAL} => create a backup file of current database."
+    echo -e "\t ${BOLD}restore${NORMAL} => replace current database with the last backup."
+    echo -e "\t ${BOLD}find${NORMAL} => search users by name."
+    echo -e "\t ${BOLD}list${NORMAL} => print database content with optional --inverse parameter."
+}
+
+showErrorMessage() {
+    printf "Command ${BOLD}$1${NORMAL} is invalid. Type $0 or $0 help to receive tool's info.\n"
+}
