@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+CURRENT_DIRECTORY=`dirname "$(readlink -f "$BASH_SOURCE")"`
+source $CURRENT_DIRECTORY/db-functions
+
+command=$1
+
+if [ ! -f "$CURRENT_DIRECTORY/../data/users.db" ];
+then 
+    read -p "File users.db does not exist. Would you like to create one? (y/n): " answer
+
+    if [ $answer == 'y' ];
+    then
+        mkdir -p "$CURRENT_DIRECTORY/../data" && touch "$CURRENT_DIRECTORY/../data/users.db"
+    else exit 0
+    fi
+else 
+    case $command in
+        add) addUserToDB;;
+        backup) createBackup;;
+        restore) restoreDBFromBackUp;;
+        find) findByUserName;;
+        list) listAllData $2;;
+        '' | help) getInfo;;
+        *) showErrorMessage $*;;
+    esac
+fi
