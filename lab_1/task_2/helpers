@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+BOLD="\033[1m"
+RED="\033[0;31m"
+NORMAL="\033[0m"
+
+checkJQ() {
+    if ! command -v jq &> /dev/null ; then
+        printf "${RED}${BOLD}JQ library for JSON parsing is not found.${NORMAL}\n"
+        echo "Use the following commands for installation: "
+        printf "\t${BOLD}MacOS${NORMAL}: brew install jq\n"
+        printf "\t${BOLD}Ubuntu${NORMAL}: sudo apt install -y jq\n"
+        printf "\t${BOLD}Redhat${NORMAL}: sudo yum install jq\n"
+
+        exit 1
+    fi   
+}
+
+validateFile() {
+    if [[ ! -e "$1" ]]; then
+        echo "File does not exist."
+        exit 1
+    fi
+}
+
+getInfo() {
+    echo -e "*** This util helps to modify JSON file and create new one. *** \nNext options are available:"
+    echo -e "\t --help                               Display instructions to the script."
+    echo -e "\t --branch <name>                      Set the branch name."
+    echo -e "\t --owner <name>                       Set the owner name."
+    echo -e "\t --repo <name>                        Set the repository name."
+    echo -e "\t --poll-for-source-changes <boolean>  Set the poll for source changes value."
+    echo -e "\t --configuration <value>              Set the BUILD_CONFIGURATION environment variable value."
+}
